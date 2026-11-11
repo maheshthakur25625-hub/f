@@ -1,5 +1,5 @@
-import { all, allPlansSafe } from './data';
-import { adminSetOrgPlanAction } from '@/lib/actions/settings';
+import { all } from '@/lib/db';
+import { adminSetOrgPlanAction, allPlans } from '@/lib/actions/settings';
 import { fmtDate, titleCase } from '@/lib/format';
 import { ActionForm } from '@/components/form';
 import { Card, PageHeader, Badge, EmptyState } from '@/components/ui';
@@ -7,7 +7,7 @@ import { Card, PageHeader, Badge, EmptyState } from '@/components/ui';
 export const dynamic = 'force-dynamic';
 
 export default async function AdminOrganizationsPage() {
-  const plans = await allPlansSafe();
+  const plans = await allPlans();
   const orgs = all<Record<string, any>>(
     `SELECT o.*,
             (SELECT COUNT(*) FROM properties p WHERE p.org_id = o.id) AS properties,
