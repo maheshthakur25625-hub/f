@@ -1,4 +1,4 @@
-import type { Permission, Role } from './rbac';
+import type { Permission, Role } from './permissions';
 
 export const ROLES: { value: Role; label: string; description: string }[] = [
   { value: 'owner', label: 'Organization Owner', description: 'Full access to every module, billing and team settings.' },

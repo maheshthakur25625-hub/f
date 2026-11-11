@@ -47,7 +47,9 @@ export default async function AutomationsPage() {
         eyebrow="Workflows"
         subtitle="Reminders are generated from live records — rent due, membership expiry, lease renewals, bookings and follow-ups."
       >
-        <ActionForm action={runAutomationsAction} submit="Run all now" className="flex items-center gap-2" compact />
+        <ActionForm action={runAutomationsAction} submit="Run all now" className="flex items-center gap-2" compact>
+          <input type="hidden" name="scope" value="all" />
+        </ActionForm>
       </PageHeader>
 
       <div className="grid gap-3 sm:grid-cols-3">

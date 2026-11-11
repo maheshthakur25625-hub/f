@@ -99,7 +99,7 @@ export default async function TenantsPage() {
           value={String(expiring.length)}
           hint="Leases ending in 60 days"
           icon="bell"
-          tone={expiring.length ? 'warning' : 'default'}
+          tone={expiring.length ? 'warn' : 'neutral'}
         />
       </div>
 

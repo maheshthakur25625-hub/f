@@ -87,10 +87,10 @@ export default async function TeamPage() {
                   <td><Badge tone={m.status === 'active' ? 'ok' : 'warn'}>{m.status}</Badge></td>
                   <td className="text-right">
                     {canWrite && m.role !== 'owner' && m.user_id !== session.userId && (
-                      <form action={removeMemberAction}>
+                      <ActionForm action={removeMemberAction} className="flex justify-end">
                         <input type="hidden" name="id" value={m.id} />
                         <DangerSubmit label="Remove" confirmText={`Remove ${m.name} from this workspace?`} />
-                      </form>
+                      </ActionForm>
                     )}
                   </td>
                 </tr>
@@ -121,10 +121,10 @@ export default async function TeamPage() {
                         <p className="text-[12.5px] font-medium">{i.email}</p>
                         <p className="text-[11px] muted">{titleCase(i.role)} · invited {fmtDate(i.created_at, session.locale, session.timezone)}</p>
                       </div>
-                      <form action={revokeInviteAction}>
+                      <ActionForm action={revokeInviteAction} className="flex justify-end">
                         <input type="hidden" name="id" value={i.id} />
                         <DangerSubmit label="Revoke" confirmText="Revoke this invite?" />
-                      </form>
+                      </ActionForm>
                     </div>
                     <CopyField label="Invite link" value={`/invite/${i.token}`} />
                   </li>

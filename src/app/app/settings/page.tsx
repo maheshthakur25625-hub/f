@@ -48,10 +48,10 @@ export default async function SettingsPage() {
           <ActionForm action={updateOrganizationAction} submit="Save profile">
             <div className="grid gap-3 sm:grid-cols-2">
               <Field label="Business name" name="name" defaultValue={session.orgName} required />
-              <Field label="Business type" name="business_type" defaultValue={session.businessType ?? 'coworking'} options={BUSINESS_TYPES.map((b) => (typeof b === 'string' ? { value: b, label: b } : b))} />
-              <Field label="Country" name="country" defaultValue={session.country ?? ''} options={COUNTRIES.map((c) => (typeof c === 'string' ? { value: c, label: c } : c))} />
+              <Field label="Business type" name="business_type" defaultValue={session.businessType ?? 'coworking'} options={BUSINESS_TYPES.map((b) => ({ value: b.value, label: b.label }))} />
+              <Field label="Country" name="country" defaultValue={session.country ?? ''} options={COUNTRIES.map((c) => ({ value: c[0], label: c[1] }))} />
               <Field label="Currency" name="currency" defaultValue={session.currency} options={CURRENCIES.map((c) => (typeof c === 'string' ? { value: c, label: c } : c))} />
-              <Field label="Timezone" name="timezone" defaultValue={session.timezone} options={TIMEZONES.map((t) => (typeof t === 'string' ? { value: t, label: t } : t))} />
+              <Field label="Timezone" name="timezone" defaultValue={session.timezone} options={TIMEZONES.map((t) => ({ value: t, label: t }))} />
               <Field label="Locale" name="locale" defaultValue={session.locale} options={[
                 { value: 'en-US', label: 'English (United States)' },
                 { value: 'en-GB', label: 'English (United Kingdom)' },

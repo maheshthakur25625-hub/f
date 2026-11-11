@@ -455,7 +455,7 @@ export function seedIfEmpty(db: SqlDb) {
       ins('vendors', { id: vid, org_id: orgId, name, trade, email, phone, created_at: iso(new Date(now.getTime() - 200 * 86400000)) });
     }
 
-    const expenses: [string, string, string, string, number, number][] = [
+    const expenses: [string, string, string, string | null, number, number][] = [
       ['ex_1', 'p_helix', 'cleaning', 'v_clean', 145000, -5],
       ['ex_2', 'p_marina', 'utilities', null, 380000, -12],
       ['ex_3', 'p_cedar', 'repairs', 'v_hvac', 92000, -18],
@@ -479,7 +479,7 @@ export function seedIfEmpty(db: SqlDb) {
       });
     }
 
-    const tickets: [string, string, string, string, string, string, string, string | null, number, number][] = [
+    const tickets: [string, string, string, string, string, string, string | null, string | null, number, number][] = [
       ['mt_1', 'p_helix', 'Aurora Boardroom projector flickering', 'The projector drops signal after 20 minutes. Member reported during a client call.', 'high', 'in_progress', 'u_maint', 'v_elec', 0, -1],
       ['mt_2', 'p_cedar', 'A-104 water pressure low', 'Tenant reports weak hot water pressure in the main bathroom.', 'medium', 'open', null, 'v_hvac', 0, -2],
       ['mt_3', 'p_marina', 'Suite 1201 HVAC thermostat offline', 'Thermostat not responding on the app or panel.', 'high', 'open', 'u_maint', 'v_hvac', 0, -3],

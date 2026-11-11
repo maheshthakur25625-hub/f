@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { Sidebar, type NavGroup } from '@/components/sidebar';
+import { Sidebar, type NavGroup, type NavItem } from '@/components/sidebar';
 import { requireWorkspace, allowed } from '@/lib/auth';
 import { ROLES } from '@/lib/rbac';
 import type { Permission } from '@/lib/permissions';
@@ -45,12 +45,12 @@ export default async function WorkspaceLayout({ children }: { children: React.Re
 
   const intelligence = [];
   if (has('ai') && can('ai.use')) intelligence.push({ href: '/app/ai', label: 'AI analyst', icon: 'sparkles' as const });
-  if (can('automations.manage')) intelligence.push({ href: '/app/automations', label: 'Automations', icon: 'bolt' as const });
+  if (can('automations.write')) intelligence.push({ href: '/app/automations', label: 'Automations', icon: 'bolt' as const });
   if (intelligence.length) groups.push({ label: 'Intelligence', items: intelligence });
 
-  const settings = [{ href: '/app/settings', label: 'Settings', icon: 'settings' as const }];
-  if (can('team.manage')) settings.push({ href: '/app/team', label: 'Team & roles', icon: 'shield' as const });
-  if (can('billing.manage')) settings.push({ href: '/app/billing', label: 'Plan & usage', icon: 'chart' as const });
+  const settings: NavItem[] = [{ href: '/app/settings', label: 'Settings', icon: 'settings' }];
+  if (can('team.write')) settings.push({ href: '/app/team', label: 'Team & roles', icon: 'shield' });
+  if (can('billing.write')) settings.push({ href: '/app/billing', label: 'Plan & usage', icon: 'chart' });
   groups.push({ label: 'Workspace', items: settings });
 
   const roleLabel = ROLES.find((r) => r.value === session.role)?.label ?? 'Member';

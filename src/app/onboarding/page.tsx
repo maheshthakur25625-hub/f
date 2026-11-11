@@ -118,11 +118,11 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
                 <Field
                   label="Country"
                   name="country"
-                  options={COUNTRIES}
+                  options={COUNTRIES.map((c) => ({ value: c[0], label: c[1] }))}
                   defaultValue={org?.country ?? 'US'}
                 />
                 <Field label="Currency" name="currency" options={CURRENCIES.map((c) => ({ value: c, label: c }))} defaultValue={org?.currency ?? 'USD'} />
-                <Field label="Timezone" name="timezone" options={TIMEZONES} defaultValue={org?.timezone ?? 'UTC'} />
+                <Field label="Timezone" name="timezone" options={TIMEZONES.map((t) => ({ value: t, label: t }))} defaultValue={org?.timezone ?? 'UTC'} />
                 <Field label="Locale" name="locale" defaultValue={org?.locale ?? 'en-US'} placeholder="en-US" hint="Used for date and number formatting." />
               </div>
               <Field label="Business website" name="website" defaultValue={org?.website} placeholder="https://helix.space" />
@@ -145,7 +145,7 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
                     <input type="radio" name="business_type" value={type.value} defaultChecked={org.business_type === type.value} className="mt-1" required />
                     <span>
                       <span className="block text-[13px] font-semibold">{type.label}</span>
-                      <span className="mt-0.5 block text-[11.5px] muted">{type.description}</span>
+                      <span className="mt-0.5 block text-[11.5px] muted">{type.blurb}</span>
                     </span>
                   </label>
                 ))}
@@ -161,16 +161,16 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
             <ActionForm action={saveModulesAction} submit="Continue" className="mt-4 space-y-3" pendingLabel="Saving…">
               <div className="grid gap-2 sm:grid-cols-2">
                 {MODULE_CATALOG.map((m) => (
-                  <label key={m.value} className="flex cursor-pointer items-center gap-2.5 rounded-xl border border-line px-3.5 py-3 has-[:checked]:border-[var(--brand)] has-[:checked]:bg-brandsoft">
+                  <label key={m.key} className="flex cursor-pointer items-center gap-2.5 rounded-xl border border-line px-3.5 py-3 has-[:checked]:border-[var(--brand)] has-[:checked]:bg-brandsoft">
                     <input
                       type="checkbox"
                       name="modules"
-                      value={m.value}
-                      defaultChecked={selectedModules.includes(m.value)}
+                      value={m.key}
+                      defaultChecked={selectedModules.includes(m.key)}
                     />
                     <span>
                       <span className="block text-[13px] font-medium">{m.label}</span>
-                      <span className="block text-[11.5px] muted">{m.description}</span>
+                      <span className="block text-[11.5px] muted">{m.detail}</span>
                     </span>
                   </label>
                 ))}
@@ -199,7 +199,7 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
                   defaultValue="coworking"
                 />
                 <Field label="City" name="city" placeholder="London" />
-                <Field label="Country" name="country" options={COUNTRIES} defaultValue={org.country} />
+                <Field label="Country" name="country" options={COUNTRIES.map((c) => ({ value: c[0], label: c[1] }))} defaultValue={org.country} />
                 <Field
                   label="Unit type"
                   name="unit_kind"
