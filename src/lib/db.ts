@@ -35,6 +35,16 @@ type NodeSqliteStmt = {
   run(...params: unknown[]): { changes: number | bigint };
 };
 
+/**
+ * node:sqlite returns rows with a null prototype, so String()/template literals
+ * throw "Cannot convert object to primitive value". Copying each row into a plain
+ * object restores Object.prototype and matches the better-sqlite3 driver.
+ */
+function plainRow<T>(row: T): T {
+  if (row && typeof row === 'object') return { ...(row as Record<string, unknown>) } as T;
+  return row;
+}
+
 function wrapNodeSqlite(db: {
   exec(sql: string): void;
   prepare(sql: string): NodeSqliteStmt;
@@ -47,8 +57,8 @@ function wrapNodeSqlite(db: {
     prepare(sql) {
       const stmt = db.prepare(sql);
       return {
-        all: (...params) => stmt.all(...normalize(params)),
-        get: (...params) => stmt.get(...normalize(params)),
+        all: (...params) => stmt.all(...normalize(params)).map((row) => plainRow(row)),
+        get: (...params) => plainRow(stmt.get(...normalize(params))),
         run: (...params) => {
           const res = stmt.run(...normalize(params));
           return { changes: Number(res.changes) };
