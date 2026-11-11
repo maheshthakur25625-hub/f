@@ -225,7 +225,19 @@ export async function adminTogglePlatformSettingAction(_s: ActionState, fd: Form
 export async function listOrgUsage(orgId: string) {
   const properties = one<{ c: number }>(`SELECT COUNT(*) AS c FROM properties WHERE org_id = ?`, [orgId]);
   const members = one<{ c: number }>(`SELECT COUNT(*) AS c FROM org_members WHERE org_id = ?`, [orgId]);
-  return { properties: Number(properties?.c ?? 0), members: Number(members?.c ?? 0) };
+  const subscription = one<Record<string, any>>(`SELECT * FROM subscriptions WHERE org_id = ?`, [orgId]);
+  const plan = one<Record<string, any>>(`SELECT * FROM plans WHERE code = ?`, [String(subscription?.plan ?? 'free')]);
+  const aiUsed = one<{ c: number }>(`SELECT COUNT(*) AS c FROM ai_messages WHERE org_id = ? AND role = 'user'`, [orgId]);
+  return {
+    properties: Number(properties?.c ?? 0),
+    members: Number(members?.c ?? 0),
+    seats: Number(members?.c ?? 0),
+    subscription,
+    propertyLimit: Number(plan?.property_limit ?? 0),
+    seatLimit: Number(plan?.seat_limit ?? 0),
+    aiCredits: Number(plan?.ai_credits ?? 0),
+    aiCreditsUsed: Number(aiUsed?.c ?? 0),
+  };
 }
 
 export async function allPlans() {
