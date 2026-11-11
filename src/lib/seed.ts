@@ -1,11 +1,11 @@
-import type Database from 'better-sqlite3';
+import type { SqlDb } from './db';
 import { hashPassword } from './password';
 
 type Val = string | number | null;
 
 const DEMO_PASSWORD = 'SpacePilot123!';
 
-function ensurePlans(db: Database.Database) {
+function ensurePlans(db: SqlDb) {
   const plans = [
     ['free', 'Free', 0, 0, 1, 2, 25, ['1 property', '2 team members', 'Coworking bookings', 'Community support'], 0],
     ['starter', 'Starter', 2900, 29000, 3, 5, 100, ['3 properties', '5 team members', 'Bookings & memberships', 'Invoicing'], 1],
@@ -21,7 +21,7 @@ function ensurePlans(db: Database.Database) {
   for (const p of plans) stmt.run(p[0], p[1], p[2], p[3], p[4], p[5], p[6], JSON.stringify(p[7]), p[8]);
 }
 
-export function seedIfEmpty(db: Database.Database) {
+export function seedIfEmpty(db: SqlDb) {
   ensurePlans(db);
   const count = db.prepare('SELECT COUNT(*) AS c FROM organizations').get() as { c: number };
   if (count.c > 0) return;

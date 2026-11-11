@@ -1,40 +1,172 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import Database from 'better-sqlite3';
 import { SCHEMA } from './schema';
 import { seedIfEmpty } from './seed';
 
-type DB = Database.Database;
+export type Row = Record<string, unknown>;
 
-const globalForDb = globalThis as unknown as { __spacepilotDb?: DB };
+export interface Stmt {
+  all(...params: unknown[]): Row[];
+  get(...params: unknown[]): Row | undefined;
+  run(...params: unknown[]): { changes: number };
+}
 
-export function getDb(): DB {
+export interface SqlDb {
+  exec(sql: string): void;
+  prepare(sql: string): Stmt;
+  transaction<T>(fn: () => T): T;
+  close(): void;
+  driver: 'better-sqlite3' | 'node:sqlite';
+}
+
+/** node:sqlite only accepts null, number, bigint, string and Uint8Array. */
+function normalize(params: unknown[]): unknown[] {
+  return params.map((p) => {
+    if (p === undefined || p === null) return null;
+    if (typeof p === 'boolean') return p ? 1 : 0;
+    if (p instanceof Date) return p.toISOString();
+    return p;
+  });
+}
+
+type NodeSqliteStmt = {
+  all(...params: unknown[]): Row[];
+  get(...params: unknown[]): Row | undefined;
+  run(...params: unknown[]): { changes: number | bigint };
+};
+
+function wrapNodeSqlite(db: {
+  exec(sql: string): void;
+  prepare(sql: string): NodeSqliteStmt;
+  close(): void;
+}): SqlDb {
+  let depth = 0;
+  return {
+    driver: 'node:sqlite',
+    exec: (sql) => db.exec(sql),
+    prepare(sql) {
+      const stmt = db.prepare(sql);
+      return {
+        all: (...params) => stmt.all(...normalize(params)),
+        get: (...params) => stmt.get(...normalize(params)),
+        run: (...params) => {
+          const res = stmt.run(...normalize(params));
+          return { changes: Number(res.changes) };
+        },
+      };
+    },
+    transaction<T>(fn: () => T): T {
+      if (depth > 0) return fn();
+      depth += 1;
+      db.exec('BEGIN IMMEDIATE');
+      try {
+        const result = fn();
+        db.exec('COMMIT');
+        return result;
+      } catch (err) {
+        try {
+          db.exec('ROLLBACK');
+        } catch {
+          /* already rolled back */
+        }
+        throw err;
+      } finally {
+        depth -= 1;
+      }
+    },
+    close: () => db.close(),
+  };
+}
+
+type BetterSqliteStmt = {
+  all(...params: unknown[]): unknown[];
+  get(...params: unknown[]): unknown;
+  run(...params: unknown[]): { changes: number };
+};
+
+function wrapBetterSqlite(db: {
+  exec(sql: string): void;
+  prepare(sql: string): BetterSqliteStmt;
+  transaction<T>(fn: () => T): T;
+  close(): void;
+}): SqlDb {
+  return {
+    driver: 'better-sqlite3',
+    exec: (sql) => db.exec(sql),
+    prepare(sql) {
+      const stmt = db.prepare(sql);
+      return {
+        all: (...params) => stmt.all(...normalize(params)) as Row[],
+        get: (...params) => stmt.get(...normalize(params)) as Row | undefined,
+        run: (...params) => stmt.run(...normalize(params)),
+      };
+    },
+    transaction: (fn) => db.transaction(fn)(),
+    close: () => db.close(),
+  };
+}
+
+function open(file: string): SqlDb {
+  const errors: string[] = [];
+
+  // 1. Native better-sqlite3 when its binary matches this Node ABI.
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mod = require('better-sqlite3');
+    const Better = (mod.default ?? mod) as new (f: string) => Parameters<typeof wrapBetterSqlite>[0];
+    const db = new Better(file);
+    db.exec('PRAGMA journal_mode = WAL;');
+    db.exec('PRAGMA foreign_keys = ON;');
+    db.exec('PRAGMA busy_timeout = 5000;');
+    return wrapBetterSqlite(db);
+  } catch (err) {
+    errors.push(`better-sqlite3: ${(err as Error).message}`);
+  }
+
+  // 2. Built-in node:sqlite (Node 22+), used by the production runtime.
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { DatabaseSync } = require('node:sqlite');
+    const db = new DatabaseSync(file) as Parameters<typeof wrapNodeSqlite>[0];
+    db.exec('PRAGMA journal_mode = WAL;');
+    db.exec('PRAGMA foreign_keys = ON;');
+    db.exec('PRAGMA busy_timeout = 5000;');
+    return wrapNodeSqlite(db);
+  } catch (err) {
+    errors.push(`node:sqlite: ${(err as Error).message}`);
+  }
+
+  throw new Error(`No SQLite driver available in this runtime. ${errors.join(' | ')}`);
+}
+
+const globalForDb = globalThis as unknown as { __spacepilotDb?: SqlDb };
+
+export function getDb(): SqlDb {
   if (globalForDb.__spacepilotDb) return globalForDb.__spacepilotDb;
   const dir = process.env.DATA_DIR || path.join(process.cwd(), '.data');
   fs.mkdirSync(dir, { recursive: true });
-  const db = new Database(path.join(dir, 'spacepilot.db'));
-  db.pragma('journal_mode = WAL');
-  db.pragma('foreign_keys = ON');
+  const db = open(path.join(dir, 'spacepilot.db'));
   db.exec(SCHEMA);
   seedIfEmpty(db);
   globalForDb.__spacepilotDb = db;
   return db;
 }
 
-export function all<T = Record<string, unknown>>(sql: string, params: unknown[] = []): T[] {
-  return getDb().prepare(sql).all(...(params as never[])) as T[];
+export function all<T = Row>(sql: string, params: unknown[] = []): T[] {
+  return getDb().prepare(sql).all(...params) as T[];
 }
 
-export function one<T = Record<string, unknown>>(sql: string, params: unknown[] = []): T | undefined {
-  return getDb().prepare(sql).get(...(params as never[])) as T | undefined;
+export function one<T = Row>(sql: string, params: unknown[] = []): T | undefined {
+  return getDb().prepare(sql).get(...params) as T | undefined;
 }
 
-export function run(sql: string, params: unknown[] = []): Database.RunResult {
-  return getDb().prepare(sql).run(...(params as never[]));
+export function run(sql: string, params: unknown[] = []): { changes: number } {
+  return getDb().prepare(sql).run(...params);
 }
 
+/** Serialised write transaction (BEGIN IMMEDIATE) used by the booking engine. */
 export function transaction<T>(fn: () => T): T {
-  return getDb().transaction(fn)();
+  return getDb().transaction(fn);
 }
 
 export function audit(entry: {
