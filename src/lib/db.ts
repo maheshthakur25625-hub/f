@@ -106,6 +106,28 @@ function wrapBetterSqlite(db: {
   };
 }
 
+type NodeSqliteModule = {
+  DatabaseSync: new (file: string) => Parameters<typeof wrapNodeSqlite>[0];
+};
+
+/**
+ * Resolve the built-in node:sqlite module without a static `require('node:sqlite')`.
+ * The bundler rewrites that specifier into an external URL reference inside the
+ * server chunk, which then fails at runtime with "Unsupported external type Url".
+ * process.getBuiltinModule is resolved at runtime and is left untouched.
+ */
+function loadNodeSqlite(): NodeSqliteModule | null {
+  const host = process as unknown as { getBuiltinModule?: (id: string) => unknown };
+  if (typeof host.getBuiltinModule !== 'function') return null;
+  try {
+    const mod = host.getBuiltinModule('node:sqlite') as NodeSqliteModule | undefined;
+    if (mod && typeof mod.DatabaseSync === 'function') return mod;
+  } catch {
+    /* this Node build has no sqlite support */
+  }
+  return null;
+}
+
 function open(file: string): SqlDb {
   const errors: string[] = [];
 
@@ -123,11 +145,11 @@ function open(file: string): SqlDb {
     errors.push(`better-sqlite3: ${(err as Error).message}`);
   }
 
-  // 2. Built-in node:sqlite (Node 22+), used by the production runtime.
+  // 2. Built-in node:sqlite (Node 22.5+), used by the production runtime.
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { DatabaseSync } = require('node:sqlite');
-    const db = new DatabaseSync(file) as Parameters<typeof wrapNodeSqlite>[0];
+    const mod = loadNodeSqlite();
+    if (!mod) throw new Error('node:sqlite is not available in this Node build');
+    const db = new mod.DatabaseSync(file) as Parameters<typeof wrapNodeSqlite>[0];
     db.exec('PRAGMA journal_mode = WAL;');
     db.exec('PRAGMA foreign_keys = ON;');
     db.exec('PRAGMA busy_timeout = 5000;');
