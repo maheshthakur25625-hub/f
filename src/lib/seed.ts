@@ -54,7 +54,7 @@ export function seedIfEmpty(db: SqlDb) {
   const pw = hashPassword(DEMO_PASSWORD);
   const orgId = 'org_northwind';
 
-  const seed = db.transaction(() => {
+  db.transaction(() => {
     ins('organizations', {
       id: orgId,
       name: 'Northwind Spaces',
@@ -668,9 +668,6 @@ export function seedIfEmpty(db: SqlDb) {
     ins('platform_settings', { key: 'support_email', value: 'support@spacepilot.app' });
     ins('platform_settings', { key: 'default_currency', value: 'USD' });
   });
-
-  seed();
-  db.prepare('SELECT 1').get();
 }
 
 export { DEMO_PASSWORD };

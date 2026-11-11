@@ -87,7 +87,7 @@ type BetterSqliteStmt = {
 function wrapBetterSqlite(db: {
   exec(sql: string): void;
   prepare(sql: string): BetterSqliteStmt;
-  transaction<T>(fn: () => T): T;
+  transaction<T>(fn: () => T): () => T;
   close(): void;
 }): SqlDb {
   return {
@@ -150,6 +150,12 @@ export function getDb(): SqlDb {
   seedIfEmpty(db);
   globalForDb.__spacepilotDb = db;
   return db;
+}
+
+export function total(sql: string, params: unknown[] = []): number {
+  const row = one<Record<string, unknown>>(sql, params);
+  if (!row) return 0;
+  return Number(Object.values(row)[0] ?? 0);
 }
 
 export function all<T = Row>(sql: string, params: unknown[] = []): T[] {

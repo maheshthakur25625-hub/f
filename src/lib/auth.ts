@@ -12,6 +12,7 @@ export type Session = {
   userId: string;
   name: string;
   email: string;
+  emailVerified: boolean;
   isPlatformAdmin: boolean;
   orgId: string | null;
   orgName: string | null;
@@ -34,6 +35,7 @@ type SessionRow = {
   user_id: string;
   name: string;
   email: string;
+  email_verified_at: string | null;
   is_platform_admin: number;
   o_id: string | null;
   org_name: string | null;
@@ -55,7 +57,7 @@ export async function getSession(): Promise<Session | null> {
   const token = store.get(SESSION_COOKIE)?.value;
   if (!token) return null;
   const row = one<SessionRow>(
-    `SELECT s.token, s.org_id, u.id AS user_id, u.name, u.email, u.is_platform_admin,
+    `SELECT s.token, s.org_id, u.id AS user_id, u.name, u.email, u.email_verified_at, u.is_platform_admin,
             o.id AS o_id, o.name AS org_name, o.slug, o.currency, o.timezone, o.locale, o.country,
             o.plan, o.business_type, o.modules, o.onboarding_complete, o.onboarding_step, m.role
        FROM sessions s
@@ -71,6 +73,7 @@ export async function getSession(): Promise<Session | null> {
     userId: row.user_id,
     name: row.name,
     email: row.email,
+    emailVerified: Boolean(row.email_verified_at),
     isPlatformAdmin: Boolean(row.is_platform_admin),
     orgId,
     orgName: orgId ? row.org_name : null,
