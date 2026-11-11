@@ -23,7 +23,7 @@ export default async function WorkspaceLayout({ children }: { children: React.Re
       items: [
         { href: '/app', label: 'Dashboard', icon: 'grid' },
         ...(can('properties.view') ? [{ href: '/app/properties', label: 'Properties', icon: 'building' as const }] : []),
-        ...(can('bookings.view') ? [{ href: '/app/bookings', label: 'Bookings', icon: 'calendar' as const, badge: unread ? String(unread) : undefined }] : []),
+        ...(can('bookings.view') ? [{ href: '/app/bookings', label: 'Bookings', icon: 'calendar' as const, badge: unread.length ? String(unread.length) : undefined }] : []),
       ],
     },
   ];
