@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { requireWorkspace, allowed } from '@/lib/auth';
-import { all } from '@/lib/db';
+import { all, one } from '@/lib/db';
 import { requestSupportAction, toggleModuleAction, updateOrganizationAction } from '@/lib/actions/settings';
 import { CURRENCIES, COUNTRIES, TIMEZONES, BUSINESS_TYPES, fmtDate } from '@/lib/format';
 import { ActionForm } from '@/components/form';
@@ -31,6 +31,7 @@ export default async function SettingsPage() {
   }
 
   const modules = new Set(session.modules ?? []);
+  const org = one<Record<string, any>>(`SELECT * FROM organizations WHERE id = ?`, [session.orgId!]);
   const support = all<Record<string, any>>(
     `SELECT * FROM support_requests WHERE org_id = ? ORDER BY created_at DESC LIMIT 10`,
     [session.orgId!],
@@ -61,8 +62,8 @@ export default async function SettingsPage() {
                 { value: 'pt-PT', label: 'Portuguese' },
                 { value: 'ar-AE', label: 'Arabic' },
               ]} />
-              <Field label="Website" name="website" defaultValue={session.website ?? ''} placeholder="https://" />
-              <Field label="Address" name="address" defaultValue={session.address ?? ''} />
+              <Field label="Website" name="website" defaultValue={org?.website ?? ''} placeholder="https://" />
+              <Field label="Address" name="address" defaultValue={org?.address ?? ''} />
             </div>
           </ActionForm>
         </Card>
@@ -70,7 +71,7 @@ export default async function SettingsPage() {
         <Card title="Workspace summary">
           <div className="space-y-0">
             <DataRow label="Workspace slug" value={<code className="text-[12px]">{session.orgSlug}</code>} />
-            <DataRow label="Your role" value={<span className="capitalize">{session.role.replace(/_/g, ' ')}</span>} />
+            <DataRow label="Your role" value={<span className="capitalize">{(session.role ?? 'member').replace(/_/g, ' ')}</span>} />
             <DataRow label="Plan" value={session.plan ?? 'free'} />
             <DataRow label="Currency" value={session.currency} />
             <DataRow label="Timezone" value={session.timezone} />
