@@ -198,6 +198,19 @@ export async function createDocumentAction(_s: ActionState, fd: FormData): Promi
 }
 
 /** Renewal reminders surfaced in the tenant workspace. */
+/** Form-shaped wrappers for inline row actions rendered with plain <form action>. */
+export async function renewLeaseFormAction(fd: FormData): Promise<void> {
+  await renewLeaseAction({}, fd);
+}
+
+export async function endLeaseFormAction(fd: FormData): Promise<void> {
+  await endLeaseAction({}, fd);
+}
+
+export async function createDocumentFormAction(fd: FormData): Promise<void> {
+  await createDocumentAction({}, fd);
+}
+
 export async function upcomingRenewals(orgId: string, days = 60) {
   return one<{ c: number }>(
     `SELECT COUNT(*) AS c FROM leases WHERE org_id = ? AND status = 'active' AND end_date <= ?`,

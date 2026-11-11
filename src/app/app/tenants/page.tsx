@@ -2,11 +2,11 @@ import Link from 'next/link';
 import { requireWorkspace, allowed } from '@/lib/auth';
 import { all, one } from '@/lib/db';
 import {
-  createDocumentAction,
+  createDocumentFormAction,
   createLeaseAction,
   createTenantAction,
-  endLeaseAction,
-  renewLeaseAction,
+  endLeaseFormAction,
+  renewLeaseFormAction,
   updateTenantAction,
 } from '@/lib/actions/leasing';
 import { money, fmtDate, todayISO, titleCase } from '@/lib/format';
@@ -166,14 +166,14 @@ export default async function TenantsPage() {
                       <td className="px-4 py-3 text-right">
                         {canWrite && t.lease_id && (
                           <div className="flex justify-end gap-1">
-                            <form action={renewLeaseAction}>
+                            <form action={renewLeaseFormAction}>
                               <input type="hidden" name="id" value={t.lease_id} />
                               <input type="hidden" name="months" value="12" />
-                              <GhostSubmit>Renew 12m</GhostSubmit>
+                              <GhostSubmit label="Renew 12m" title="Extend this lease by 12 months" />
                             </form>
-                            <form action={endLeaseAction}>
+                            <form action={endLeaseFormAction}>
                               <input type="hidden" name="id" value={t.lease_id} />
-                              <DangerSubmit>End</DangerSubmit>
+                              <DangerSubmit label="End" confirmText="End this lease and release the unit?" />
                             </form>
                           </div>
                         )}
@@ -282,11 +282,11 @@ export default async function TenantsPage() {
                   <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-3 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
                     <span>Lease {t.lease_id}</span>
                     <span>Deposit {money(Number(t.deposit ?? 0), session.currency, session.locale)}</span>
-                    <form action={createDocumentAction} className="flex items-center gap-2">
+                    <form action={createDocumentFormAction} className="flex items-center gap-2">
                       <input type="hidden" name="entity_type" value="lease" />
                       <input type="hidden" name="entity_id" value={t.lease_id} />
                       <input type="file" name="file" required className="text-xs" />
-                      <GhostSubmit>Upload</GhostSubmit>
+                      <GhostSubmit label="Upload" />
                     </form>
                   </div>
                 )}
