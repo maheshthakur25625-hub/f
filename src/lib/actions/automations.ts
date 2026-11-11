@@ -6,24 +6,13 @@ import { allowed, requireWorkspace } from '../auth';
 import { id as newId } from '../ids';
 import { notify } from '../notify';
 import { addDays, fmtDate, money, todayISO } from '../format';
+import { AUTOMATION_KINDS } from '../automation-kinds';
 import type { ActionState } from '@/components/form';
 
 function str(fd: FormData, k: string, fallback = ''): string {
   const v = fd.get(k);
   return v === null ? fallback : String(v).trim();
 }
-
-export const AUTOMATION_KINDS = [
-  'rent_due',
-  'membership_expiry',
-  'lease_renewal',
-  'booking_confirmation',
-  'booking_cancellation',
-  'payment_receipt',
-  'maintenance_notice',
-  'new_lead',
-  'follow_up',
-] as const;
 
 export async function createAutomationAction(_s: ActionState, fd: FormData): Promise<ActionState> {
   const session = await requireWorkspace();

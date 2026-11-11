@@ -1,7 +1,6 @@
 import { requireWorkspace, allowed } from '@/lib/auth';
 import { all } from '@/lib/db';
 import {
-  DEAL_STAGES,
   convertLeadAction,
   createDealAction,
   createLeadAction,
@@ -9,6 +8,7 @@ import {
   setDealStageAction,
   updateLeadAction,
 } from '@/lib/actions/crm';
+import { DEAL_STAGES } from '@/lib/deal-stages';
 import { money, fmtDate, titleCase, timeAgo, todayISO } from '@/lib/format';
 import { ActionForm, GhostSubmit } from '@/components/form';
 import { Card, PageHeader, Stat, Field, StatusBadge, EmptyState, Badge, Avatar } from '@/components/ui';

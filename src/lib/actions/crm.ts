@@ -5,6 +5,7 @@ import { audit, one, run } from '../db';
 import { allowed, requireWorkspace } from '../auth';
 import { id as newId } from '../ids';
 import { notify } from '../notify';
+import { DEAL_STAGES } from '../deal-stages';
 import type { ActionState } from '@/components/form';
 
 function str(fd: FormData, k: string, fallback = ''): string {
@@ -14,8 +15,6 @@ function str(fd: FormData, k: string, fallback = ''): string {
 function cents(fd: FormData, k: string): number {
   return Math.max(0, Math.round(Number(str(fd, k) || 0) * 100));
 }
-
-export const DEAL_STAGES = ['new', 'contacted', 'qualified', 'viewing', 'proposal', 'negotiation', 'won', 'lost'] as const;
 
 export async function createLeadAction(_s: ActionState, fd: FormData): Promise<ActionState> {
   const session = await requireWorkspace();

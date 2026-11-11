@@ -1,6 +1,7 @@
 import { requireWorkspace, allowed } from '@/lib/auth';
 import { all } from '@/lib/db';
-import { AUTOMATION_KINDS, createAutomationAction, runAutomationsAction, toggleAutomationAction } from '@/lib/actions/automations';
+import { createAutomationAction, runAutomationsAction, toggleAutomationAction } from '@/lib/actions/automations';
+import { AUTOMATION_KINDS } from '@/lib/automation-kinds';
 import { fmtDate, titleCase, timeAgo } from '@/lib/format';
 import { ActionForm, GhostSubmit } from '@/components/form';
 import { Card, PageHeader, Stat, Field, EmptyState, Badge, StatusBadge } from '@/components/ui';
