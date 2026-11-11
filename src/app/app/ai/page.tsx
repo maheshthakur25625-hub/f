@@ -67,7 +67,7 @@ export default async function AiPage({ searchParams }: { searchParams: Promise<{
         <Card
           title="Answer"
           subtitle={question}
-          action={<Badge tone="success">Computed from live records</Badge>}
+          action={<Badge tone="ok">Computed from live records</Badge>}
         >
           <p className="text-base leading-relaxed text-slate-800 dark:text-slate-100">{result.answer}</p>
           {result.bullets.length > 0 && (
