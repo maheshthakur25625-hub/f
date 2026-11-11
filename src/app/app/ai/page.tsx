@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { requireWorkspace, allowed } from '@/lib/auth';
-import { answerFor, askAction, SUGGESTED_QUESTIONS } from '@/lib/actions/ai';
+import { answerFor, askAction } from '@/lib/actions/ai';
+import { SUGGESTED_QUESTIONS } from '@/lib/ai-suggestions';
 import { Badge, Card, EmptyState, PageHeader } from '@/components/ui';
 
 export const dynamic = 'force-dynamic';

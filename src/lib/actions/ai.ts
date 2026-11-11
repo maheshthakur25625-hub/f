@@ -16,11 +16,3 @@ export async function answerFor(orgId: string, orgName: string, currency: string
   return answer(question, { orgId, orgName, currency, locale });
 }
 
-export const SUGGESTED_QUESTIONS = [
-  'Which property generated the highest revenue?',
-  'Which units are vacant?',
-  'Which tenants have overdue payments?',
-  'What are my occupancy trends?',
-  'Which memberships expire soon?',
-  'Summarize this month’s business performance.',
-];
